@@ -1,0 +1,16 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-active-project",
+            "type": "shell",
+            "command": "proj=$(find \"${fileDirname}\" -maxdepth 1 -name \"*.csproj\" | head -n 1); dotnet build \"$proj\"",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "run-active-project",
+            "type": "shell",
+            "command": "proj=$(find \"${fileDirname}\" -maxdepth 1 -name \"*.csproj\" | head -n 1); dotnet run --project \"$proj\"",
+        }
+    ]
+}

@@ -1,0 +1,37 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Active Project",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-active-project",
+            "program": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "${fileDirname}"
+            ],
+            "cwd": "${fileDirname}",
+            "console": "externalTerminal",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Launch Active Project (Kestrel)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-active-project",
+            "program": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "${fileDirname}",
+                "--urls",
+                "http://0.0.0.0:5000"
+            ],
+            "cwd": "${fileDirname}",
+            "console": "externalTerminal",
+            "stopAtEntry": false
+        }
+    ]
+}
