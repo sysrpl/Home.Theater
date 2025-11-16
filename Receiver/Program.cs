@@ -187,7 +187,7 @@ public static class Program
                     PJLinkSend("%1POWR 1");
                     break;
                 case "2":
-                    WriteLine("Snefing Power Off command");
+                    WriteLine("Sending Power Off command");
                     PJLinkSend("%1POWR 0");
                     break;
                 case "3":
@@ -238,7 +238,7 @@ public static class Program
         }
         receiverAddress = File.ReadAllText("receiver").Trim();
         receiverPort = 23;
-
+        WriteLine($"Receiver address and port: {receiverAddress}:{receiverPort}");
         if (!File.Exists("projector"))
         {
             WriteLine("Projector address file not found.");
@@ -246,7 +246,7 @@ public static class Program
         }
         pjlinkAddress = File.ReadAllText("projector").Trim();
         pjlinkPort = 4352;
-
+        WriteLine($"Projector addess and port: {pjlinkAddress}:{pjlinkPort}");
         while (true)
         {
             WriteLine();
@@ -255,7 +255,6 @@ public static class Program
             WriteLine("2) Test Projector");
             WriteLine("0) Quit");
             Write("Select option: ");
-
             var choice = ReadLine()?.Trim();
             switch (choice)
             {
