@@ -201,7 +201,7 @@ public static class Program
                     break;
                 case "4":
                     WriteLine("Sending Input Source query");
-                    PJLinkSend("%1INPT ?");
+                    PJLinkSend("%2INPT ?");
                     break;
                 case "5":
                     Write("Enter input source code (e.g., 11=HDMI1, 12=HDMI2): ");
