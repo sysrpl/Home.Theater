@@ -74,7 +74,6 @@ public static class Program
             stream.ReadTimeout = 8000;
             stream.WriteTimeout = 3000;
             using var reader = new StreamReader(stream, Encoding.ASCII);
-            Thread.Sleep(1000);
             string response = reader.ReadLine();
             response = response?.Trim() ?? string.Empty;
             WriteLine("<<" + response);
