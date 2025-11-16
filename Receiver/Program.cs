@@ -70,8 +70,7 @@ public static class Program
                 return;
             }
             client.EndConnect(result);
-            //Thread.Sleep(1000);
-            Thread.Sleep(100);
+            Thread.Sleep(10);
             using var stream = client.GetStream();
             stream.ReadTimeout = 3000;
             stream.WriteTimeout = 3000;
@@ -81,8 +80,7 @@ public static class Program
             string response = reader.ReadLine();
             response = response?.Trim() ?? string.Empty;
             WriteLine("<< " + response);
-            //Thread.Sleep(4000);
-            Thread.Sleep(100);
+            Thread.Sleep(10);
             stream.Write(data, 0, data.Length);
             if (command.Contains("?"))
             {
