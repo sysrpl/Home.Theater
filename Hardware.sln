@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kaleidescape", "Kaleidescap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Receiver", "Receiver\Receiver.csproj", "{FD37609C-EFB1-400A-8E95-A544ACD60726}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Discovery", "Discovery\Discovery.csproj", "{E09C1453-F6F4-43C6-B9EC-B4A5C8107667}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{FD37609C-EFB1-400A-8E95-A544ACD60726}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD37609C-EFB1-400A-8E95-A544ACD60726}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD37609C-EFB1-400A-8E95-A544ACD60726}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E09C1453-F6F4-43C6-B9EC-B4A5C8107667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E09C1453-F6F4-43C6-B9EC-B4A5C8107667}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E09C1453-F6F4-43C6-B9EC-B4A5C8107667}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E09C1453-F6F4-43C6-B9EC-B4A5C8107667}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

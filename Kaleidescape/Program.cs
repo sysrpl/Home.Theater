@@ -24,17 +24,10 @@ class Program
         var client = new KaleidescapeClient();
 
         // Subscribe to events
-        client.OnConnect += (sender, e) =>
-            WriteLine("** connected **");
-
-        client.OnDisconnect += (sender, e) =>
-            WriteLine("** disconnected **");
-
-        client.OnTimeout += (sender, e) =>
-            WriteLine("** connection timeout **");
-
-        client.OnMessage += (sender, message) =>
-            WriteLine($"<< {message}");
+        client.OnConnect += (sender, e) => WriteLine("** connected **");
+        client.OnDisconnect += (sender, e) => WriteLine("** disconnected **");
+        client.OnTimeout += (sender, e) => WriteLine("** connection timeout **");
+        client.OnMessage += (sender, message) => WriteLine($"<< {message}");
 
         // Try to connect
         WriteLine($"Connecting to {host}");
@@ -74,8 +67,8 @@ class Program
                 string[] parts = input.Split([' '], 2);
                 string command = parts[0].ToUpper();
                 string parameters = parts.Length > 1 ? parts[1] : string.Empty;
-                tag = await client.SendCommandAsync(deviceId, command, parameters);
                 WriteLine($">> {deviceId:D2}/{tag}/{command}:{parameters}");
+                tag = await client.SendCommandAsync(deviceId, command, parameters);
             }
             catch (Exception ex)
             {

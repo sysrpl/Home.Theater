@@ -14,12 +14,13 @@ import platform
 # Define ports and their services
 PORTS = {
     22: "SSH",
-    23: "Telnet",
+    23: "TELNET",
     80: "HTTP",
     443: "HTTPS",
-    4352: "Projector",
-    9009: "Lights",
-    10000: "Kaleidescape"
+    1255: "HEOS",
+    4352: "PJLINK",
+    9009: "LIGHTS",
+    10000: "KALEIDESCAPE"
 }
 
 def get_local_network() -> str:
@@ -30,7 +31,7 @@ def get_local_network() -> str:
         s.connect(("8.8.8.8", 80))
         local_ip = s.getsockname()[0]
         s.close()
-        
+
         # Assume /24 subnet
         network = '.'.join(local_ip.split('.')[:-1]) + '.0/24'
         return network
@@ -40,7 +41,7 @@ def get_local_network() -> str:
 
 def get_hostname(ip: str, timeout: float = 2.0) -> str:
     """Attempt to get the hostname for an IP address using multiple methods."""
-    
+
     # Method 1: Standard DNS reverse lookup
     try:
         hostname = socket.gethostbyaddr(ip)[0]
@@ -48,7 +49,7 @@ def get_hostname(ip: str, timeout: float = 2.0) -> str:
             return hostname
     except:
         pass
-    
+
     # Method 2: mDNS/Bonjour lookup (works well for Raspberry Pi and Apple devices)
     try:
         result = subprocess.run(
@@ -65,7 +66,7 @@ def get_hostname(ip: str, timeout: float = 2.0) -> str:
                 return hostname
     except:
         pass
-    
+
     # Method 3: Try SNMP sysName (if snmpget is available)
     try:
         result = subprocess.run(
@@ -80,7 +81,7 @@ def get_hostname(ip: str, timeout: float = 2.0) -> str:
                 return name
     except:
         pass
-    
+
     # Method 4: nmblookup on Linux/Mac (NetBIOS)
     if platform.system() != "Windows":
         try:
@@ -97,7 +98,7 @@ def get_hostname(ip: str, timeout: float = 2.0) -> str:
                         return name
         except:
             pass
-    
+
     # Method 5: nbtstat on Windows (NetBIOS)
     if platform.system() == "Windows":
         try:
@@ -114,7 +115,7 @@ def get_hostname(ip: str, timeout: float = 2.0) -> str:
                         return name
         except:
             pass
-    
+
     # Method 6: Try SSH banner grab (for devices with SSH open)
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -134,7 +135,7 @@ def get_hostname(ip: str, timeout: float = 2.0) -> str:
                         return f"{cleaned} (SSH)"
     except:
         pass
-    
+
     return "Unknown"
 
 def check_port(ip: str, port: int, timeout: float = 1.0) -> bool:
@@ -151,11 +152,11 @@ def check_port(ip: str, port: int, timeout: float = 1.0) -> bool:
 def scan_host(ip: str) -> Dict:
     """Scan a single host for all specified ports."""
     open_ports = []
-    
+
     for port in PORTS.keys():
         if check_port(ip, port):
             open_ports.append(port)
-    
+
     if open_ports:
         hostname = get_hostname(ip)
         return {
@@ -163,37 +164,37 @@ def scan_host(ip: str) -> Dict:
             'hostname': hostname,
             'open_ports': open_ports
         }
-    
+
     return None
 
 def scan_network(network: str, max_workers: int = 50) -> List[Dict]:
     """Scan the entire network for open ports."""
     results = []
     network_obj = ipaddress.IPv4Network(network, strict=False)
-    
+
     print(f"Scanning network: {network}")
     print(f"Total hosts to scan: {network_obj.num_addresses - 2}")
     print("This may take a few minutes...\n")
-    
+
     # Use ThreadPoolExecutor for concurrent scanning
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Skip network and broadcast addresses
         hosts = [str(ip) for ip in network_obj.hosts()]
-        
+
         # Submit all scan jobs
         future_to_ip = {executor.submit(scan_host, ip): ip for ip in hosts}
-        
+
         # Process completed scans
         completed = 0
         for future in concurrent.futures.as_completed(future_to_ip):
             completed += 1
             if completed % 10 == 0:
                 print(f"Scanned {completed}/{len(hosts)} hosts...", end='\r')
-            
+
             result = future.result()
             if result:
                 results.append(result)
-    
+
     print(f"\nScan complete! Found {len(results)} hosts with open ports.\n")
     return results
 
@@ -202,38 +203,38 @@ def print_results(results: List[Dict]):
     if not results:
         print("No hosts found with specified ports open.")
         return
-    
+
     print("=" * 80)
     print(f"{'IP Address':<18} {'Hostname':<25} {'Open Services'}")
     print("=" * 80)
-    
+
     for host in sorted(results, key=lambda x: ipaddress.IPv4Address(x['ip'])):
         services = [f"{PORTS[port]} ({port})" for port in host['open_ports']]
         services_str = ", ".join(services)
-        
+
         print(f"{host['ip']:<18} {host['hostname']:<25} {services_str}")
-    
+
     print("=" * 80)
 
 def main():
     """Main function to run the network scanner."""
     print("Local Network Port Scanner")
     print("=" * 80)
-    
+
     # Get local network
     network = get_local_network()
     print(f"Detected network: {network}")
-    
+
     # Allow user to override
     user_input = input(f"Press Enter to use this network, or enter a different CIDR (e.g., 192.168.1.0/24): ").strip()
     if user_input:
         network = user_input
-    
+
     print()
-    
+
     # Scan the network
     results = scan_network(network)
-    
+
     # Print results
     print_results(results)
 

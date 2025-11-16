@@ -57,7 +57,7 @@ public static class Program
         }
     }
 
-    static string PJLinkSend(string command)
+    static void PJLinkSend(string command)
     {
         try
         {
@@ -67,33 +67,27 @@ public static class Program
             if (!success)
             {
                 WriteLine("Unable to connect to projector: timeout.");
-                return string.Empty;
+                return;
             }
             client.EndConnect(result);
-
             using var stream = client.GetStream();
             stream.ReadTimeout = 3000;
             stream.WriteTimeout = 3000;
-
+            using var reader = new StreamReader(stream, Encoding.ASCII);
+            Thread.Sleep(1000);
+            string response = reader.ReadLine();
+            response = response?.Trim() ?? string.Empty;
+            WriteLine("<<" + response);
             byte[] data = Encoding.ASCII.GetBytes(command + "\r");
             stream.Write(data, 0, data.Length);
-
-            using var reader = new StreamReader(stream, Encoding.ASCII);
-            try
-            {
-                string response = reader.ReadLine();
-                return response?.Trim() ?? string.Empty;
-            }
-            catch (IOException)
-            {
-                WriteLine("No response received from projector.");
-                return string.Empty;
-            }
+            Thread.Sleep(1000);
+            response = reader.ReadLine();
+            response = response?.Trim() ?? string.Empty;
+            WriteLine("<<" + response);
         }
-        catch (Exception ex)
+        catch
         {
-            WriteLine($"Projector error: {ex.Message}");
-            return string.Empty;
+            WriteLine("Error reading response from projector.");
         }
     }
 
@@ -190,40 +184,42 @@ public static class Program
             switch (choice)
             {
                 case "1":
+                    WriteLine("Sending Power On command");
                     PJLinkSend("%1POWR 1");
-                    WriteLine("Power On command sent.");
                     break;
                 case "2":
+                    WriteLine("Snefing Power Off command");
                     PJLinkSend("%1POWR 0");
-                    WriteLine("Power Off command sent.");
                     break;
                 case "3":
-                    WriteLine("Power Status: " + PJLinkSend("%1POWR ?"));
+                    WriteLine("Sending Power Status query");
+                    PJLinkSend("%1POWR ?");
                     break;
                 case "4":
-                    WriteLine("Input Source: " + PJLinkSend("%1INPT ?"));
+                    WriteLine("Sending Input Source query");
+                    PJLinkSend("%1INPT ?");
                     break;
                 case "5":
                     Write("Enter input source code (e.g., 11=HDMI1, 12=HDMI2): ");
                     string src = ReadLine()?.Trim() ?? "11";
+                    WriteLine("Sending Input command");
                     PJLinkSend($"%1INPT {src}");
-                    WriteLine("Input set.");
                     break;
                 case "6":
-                    string lampHours = PJLinkSend("%1LAMP ?");
-                    WriteLine("Lamp Hours: " + lampHours);
+                    WriteLine("Sending Lamp Hours query");
+                    PJLinkSend("%1LAMP ?");
                     break;
                 case "7":
-                    string name = PJLinkSend("%1NAME ?");
-                    WriteLine("Device Name: " + name);
+                    WriteLine("Sending Device Name query");
+                    PJLinkSend("%1NAME ?");
                     break;
                 case "8":
-                    string info = PJLinkSend("%1INF1 ?");
-                    WriteLine("Device Info: " + info);
+                    WriteLine("Sending Device Info query");
+                    PJLinkSend("%1INF1 ?");
                     break;
                 case "9":
-                    string pjclass = PJLinkSend("%1CLSS ?");
-                    WriteLine("PJLink Class: " + pjclass);
+                    WriteLine("Sending PJLink Class query");
+                    PJLinkSend("%1CLSS ?");
                     break;
                 case "0":
                     return;
