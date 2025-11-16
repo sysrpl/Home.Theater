@@ -79,12 +79,15 @@ public static class Program
             stream.Write(data, 0, data.Length);
             string response = reader.ReadLine();
             response = response?.Trim() ?? string.Empty;
-            WriteLine("<<" + response);
+            WriteLine("<< " + response);
             Thread.Sleep(4000);
             stream.Write(data, 0, data.Length);
-            response = reader.ReadLine();
-            response = response?.Trim() ?? string.Empty;
-            WriteLine("<<" + response);
+            if (command.Contains("?"))
+            {
+                response = reader.ReadLine();
+                response = response?.Trim() ?? string.Empty;
+                WriteLine("<< " + response);
+            }
         }
         catch
         {
