@@ -70,16 +70,18 @@ public static class Program
                 return;
             }
             client.EndConnect(result);
+            Thread.Sleep(1000);
             using var stream = client.GetStream();
             stream.ReadTimeout = 8000;
             stream.WriteTimeout = 3000;
             using var reader = new StreamReader(stream, Encoding.ASCII);
+            byte[] data = Encoding.ASCII.GetBytes(command + "\r");
+            stream.Write(data, 0, data.Length);
             string response = reader.ReadLine();
             response = response?.Trim() ?? string.Empty;
             WriteLine("<<" + response);
-            byte[] data = Encoding.ASCII.GetBytes(command + "\r");
-            stream.Write(data, 0, data.Length);
             Thread.Sleep(4000);
+            stream.Write(data, 0, data.Length);
             response = reader.ReadLine();
             response = response?.Trim() ?? string.Empty;
             WriteLine("<<" + response);
