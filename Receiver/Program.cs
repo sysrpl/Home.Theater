@@ -71,7 +71,7 @@ public static class Program
             }
             client.EndConnect(result);
             using var stream = client.GetStream();
-            stream.ReadTimeout = 3000;
+            stream.ReadTimeout = 8000;
             stream.WriteTimeout = 3000;
             using var reader = new StreamReader(stream, Encoding.ASCII);
             Thread.Sleep(1000);
@@ -80,7 +80,7 @@ public static class Program
             WriteLine("<<" + response);
             byte[] data = Encoding.ASCII.GetBytes(command + "\r");
             stream.Write(data, 0, data.Length);
-            Thread.Sleep(1000);
+            Thread.Sleep(4000);
             response = reader.ReadLine();
             response = response?.Trim() ?? string.Empty;
             WriteLine("<<" + response);
