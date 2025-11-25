@@ -12,21 +12,21 @@ public class KaleidescapeClient : IDisposable
     private NetworkStream stream;
     private CancellationTokenSource cancel;
     private Task readTask;
-    private int sequenceId = 0;
+    private int sequenceId = 1;
     private readonly SemaphoreSlim writeLock = new SemaphoreSlim(1, 1);
 
     public event EventHandler OnConnect;
     public event EventHandler OnDisconnect;
     public event EventHandler OnTimeout;
     public event EventHandler<string> OnMessage;
+    public event EventHandler OnWait;
 
     public bool IsConnected => client?.Connected ?? false;
 
     public async Task ConnectAsync(string host, int port = 10000)
     {
-        const int timeout = 5000;
+        const int timeout = 3000;
         client = new TcpClient();
-        // Create a cancellation token with timeout
         using (var connect = new CancellationTokenSource(timeout))
         {
             try
@@ -86,6 +86,26 @@ public class KaleidescapeClient : IDisposable
     {
         byte[] buffer = new byte[4096];
         var messageBuilder = new StringBuilder();
+        DateTime lastLineReadTime = DateTime.MinValue;
+        bool waitEventFired = true;
+
+        // Start a monitoring task
+        var monitorTask = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(10, token);
+
+                if (lastLineReadTime != DateTime.MinValue &&
+                    !waitEventFired &&
+                    (DateTime.UtcNow - lastLineReadTime).TotalSeconds >= 0.2)
+                {
+                    OnWait?.Invoke(this, EventArgs.Empty);
+                    waitEventFired = true;
+                }
+            }
+        }, token);
+
         try
         {
             while (!token.IsCancellationRequested && stream != null)
@@ -96,18 +116,32 @@ public class KaleidescapeClient : IDisposable
                     // Connection closed
                     break;
                 }
+
                 string data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                 messageBuilder.Append(data);
+
                 // Process complete messages (lines ending with \r\n)
                 string accumulated = messageBuilder.ToString();
                 int lineEnd;
+                bool foundLine = false;
+
                 while ((lineEnd = accumulated.IndexOf("\r\n")) >= 0)
                 {
                     string message = accumulated.Substring(0, lineEnd);
                     accumulated = accumulated.Substring(lineEnd + 2);
+
                     // Fire event with complete message
                     OnMessage?.Invoke(this, message);
+                    foundLine = true;
                 }
+
+                // Update tracking if we found at least one line
+                if (foundLine)
+                {
+                    lastLineReadTime = DateTime.UtcNow;
+                    waitEventFired = false;
+                }
+
                 messageBuilder.Clear();
                 messageBuilder.Append(accumulated);
             }
@@ -115,6 +149,7 @@ public class KaleidescapeClient : IDisposable
         catch
         {
         }
+
         OnDisconnect?.Invoke(this, EventArgs.Empty);
     }
 

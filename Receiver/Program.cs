@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using static System.Console;
 
@@ -6,6 +7,8 @@ namespace Receiver;
 
 public static class Program
 {
+    static bool isPi = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
+        || RuntimeInformation.ProcessArchitecture == Architecture.Arm;
     static string receiverAddress;
     static int receiverPort;
 
@@ -32,7 +35,6 @@ public static class Program
 
             byte[] data = Encoding.UTF8.GetBytes(command + "\r");
             stream.Write(data, 0, data.Length);
-
             if (command.EndsWith("?"))
             {
                 using var reader = new StreamReader(stream, Encoding.UTF8);
@@ -48,7 +50,7 @@ public static class Program
                 }
             }
 
-            return string.Empty;
+            //return string.Empty;
         }
         catch (Exception ex)
         {
@@ -144,7 +146,7 @@ public static class Program
                     WriteLine("Unmuted.");
                     break;
                 case "7":
-                    WriteLine("Mute Status: " + ReceiverSend("MU?"));
+                    WriteLine("Mute Status: " + ReceiverSend("MU ?"));
                     break;
                 case "8":
                     ReceiverSend("PWON");
@@ -155,7 +157,7 @@ public static class Program
                     WriteLine("Power Off command sent.");
                     break;
                 case "10":
-                    WriteLine("Power Status: " + ReceiverSend("PW?"));
+                    WriteLine("Power Status: " + ReceiverSend("PW ?"));
                     break;
                 case "0":
                     return;
@@ -236,21 +238,30 @@ public static class Program
 
     public static void Main()
     {
-        if (!File.Exists("receiver"))
+        if (isPi)
         {
-            WriteLine("Receiver address file not found.");
-            return;
+            if (!File.Exists("receiver"))
+            {
+                WriteLine("Receiver address file not found.");
+                return;
+            }
+            receiverAddress = File.ReadAllText("receiver").Trim();
+            receiverPort = 23;
+            if (!File.Exists("projector"))
+            {
+                WriteLine("Projector address file not found.");
+                return;
+            }
+            pjlinkAddress = File.ReadAllText("projector").Trim();
+            pjlinkPort = 4352;
         }
-        receiverAddress = File.ReadAllText("receiver").Trim();
-        receiverPort = 23;
+        else
+        {
+            receiverAddress = pjlinkAddress = "192.168.1.149";
+            receiverPort = 10023;
+            pjlinkPort = 4352;
+        }
         WriteLine($"Receiver address and port: {receiverAddress}:{receiverPort}");
-        if (!File.Exists("projector"))
-        {
-            WriteLine("Projector address file not found.");
-            return;
-        }
-        pjlinkAddress = File.ReadAllText("projector").Trim();
-        pjlinkPort = 4352;
         WriteLine($"Projector addess and port: {pjlinkAddress}:{pjlinkPort}");
         while (true)
         {
